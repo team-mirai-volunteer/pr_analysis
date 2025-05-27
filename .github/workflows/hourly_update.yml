@@ -40,13 +40,13 @@ jobs:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
           cd pr_analysis
-          python -m src.collectors.pr_collector
+          python src/collectors/pr_collector_main.py --output-dir ../pr-data/prs
           echo "PR data update completed"
 
       - name: Generate Label Markdown files
         run: |
           cd pr_analysis
-          python -m src.generators.label_report
+          python src/generators/label_report_main.py --input ../pr-data/prs --output-dir ../pr-data/reports/labels
           echo "Label reports generated"
 
       - name: Generate Section Analysis Report
@@ -54,7 +54,7 @@ jobs:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
           cd pr_analysis
-          python -m src.analyzers.section_analyzer
+          python src/analyzers/section_analyzer_main.py --input ../pr-data/prs --output ../pr-data/reports/sections/section_report.md
           echo "Section analysis report generated"
 
       - name: Commit and push to pr-data repository
@@ -76,6 +76,11 @@ jobs:
           # レポートファイルの追加
           if [ -d "reports" ]; then
             git add reports/
+          fi
+          
+          # 最後の実行情報ファイルの追加
+          if [ -f "last_run_info.json" ]; then
+            git add last_run_info.json
           fi
           
           # 変更がある場合のみコミットする
