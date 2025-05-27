@@ -1,0 +1,89 @@
+name: Hourly PR Data Update
+
+on:
+  schedule:
+    # 1時間ごとに実行（UTC時間）
+    - cron: "0 * * * *"
+  workflow_dispatch: # 手動実行も可能にする
+
+jobs:
+  update-pr-data:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout pr_analysis repository
+        uses: actions/checkout@v3
+        with:
+          repository: team-mirai-volunteer/pr_analysis
+          token: ${{ secrets.GH_TOKEN }}
+          path: pr_analysis
+
+      - name: Checkout pr-data repository
+        uses: actions/checkout@v3
+        with:
+          repository: team-mirai-volunteer/pr-data
+          token: ${{ secrets.GH_TOKEN }}
+          path: pr-data
+
+      - name: Set up Python
+        uses: actions/setup-python@v4
+        with:
+          python-version: "3.10"
+          cache: "pip"
+
+      - name: Install dependencies
+        run: |
+          cd pr_analysis
+          pip install -r requirements.txt
+
+      - name: Run PR data update script
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          cd pr_analysis
+          python -m src.collectors.pr_collector
+          echo "PR data update completed"
+
+      - name: Generate Label Markdown files
+        run: |
+          cd pr_analysis
+          python -m src.generators.label_report
+          echo "Label reports generated"
+
+      - name: Generate Section Analysis Report
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          cd pr_analysis
+          python -m src.analyzers.section_analyzer
+          echo "Section analysis report generated"
+
+      - name: Commit and push to pr-data repository
+        run: |
+          cd pr-data
+          git config user.name "GitHub Actions Bot"
+          git config user.email "actions@github.com"
+          
+          # PRデータファイルの追加
+          if [ -d "prs" ]; then
+            git add prs/
+          fi
+          
+          # インデックスファイルの追加
+          if [ -d "indexes" ]; then
+            git add indexes/
+          fi
+          
+          # レポートファイルの追加
+          if [ -d "reports" ]; then
+            git add reports/
+          fi
+          
+          # 変更がある場合のみコミットする
+          if git diff --staged --quiet; then
+            echo "No changes to commit for pr-data repository"
+          else
+            timestamp=$(TZ=Asia/Tokyo date '+%Y-%m-%d %H:%M:%S JST')
+            git commit -m "Update PR data and reports - ${timestamp}"
+            git push
+            echo "Changes pushed to pr-data repository"
+          fi
