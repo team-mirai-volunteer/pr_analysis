@@ -45,7 +45,9 @@ def main():
     
     output_dir = args.output_dir
     if not output_dir:
-        output_dir = Path(config["data"]["base_dir"])
+        output_dir = Path(config["data"]["base_dir"]).resolve()
+    else:
+        output_dir = Path(output_dir).resolve()
     
     collector = PRCollector(config)
     
