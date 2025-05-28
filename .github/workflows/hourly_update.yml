@@ -79,8 +79,9 @@ jobs:
           fi
           
           # 最後の実行情報ファイルの追加
-          if [ -f "last_run_info.json" ]; then
-            git add last_run_info.json
+          if [ -f "prs/last_run_info.json" ]; then
+            git add prs/last_run_info.json
+            echo "Added last_run_info.json to commit"
           fi
           
           # 変更がある場合のみコミットする

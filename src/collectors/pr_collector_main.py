@@ -30,6 +30,10 @@ def parse_arguments():
         "--state", type=str, default="all", choices=["open", "closed", "all"],
         help="取得するPRの状態（open/closed/all）"
     )
+    parser.add_argument(
+        "--force-full", action="store_true",
+        help="前回の実行情報を無視して全PRを取得する"
+    )
     return parser.parse_args()
 
 
@@ -45,18 +49,33 @@ def main():
     
     collector = PRCollector(config)
     
-    last_run_file = Path(output_dir).parent / "last_run_info.json"
+    last_run_file = Path(output_dir) / "last_run_info.json"
     last_updated_at = None
     
-    if last_run_file.exists():
+    if args.force_full:
+        print("--force-full オプションが指定されました。全PRを取得します。")
+        last_updated_at = None
+    elif last_run_file.exists():
         import json
         try:
             with open(last_run_file, encoding="utf-8") as f:
                 last_run_info = json.load(f)
                 last_updated_at = datetime.datetime.fromisoformat(last_run_info["last_updated_at"])
                 print(f"前回の実行情報を読み込みました: 最終更新日時 = {last_updated_at}")
+                print(f"差分更新モードで実行します (since: {last_updated_at})")
         except Exception as e:
             print(f"前回の実行情報の読み込み中にエラーが発生しました: {e}")
+            print("エラー: 前回の実行情報ファイルが破損しています。--force-full オプションを使用して全取得を実行してください。")
+            return 1
+    else:
+        existing_pr_files = list(Path(output_dir).glob("*.json"))
+        if existing_pr_files and not args.force_full:
+            print(f"エラー: 既存のPRデータファイルが見つかりましたが、前回の実行情報ファイル {last_run_file.absolute()} が存在しません。")
+            print("--force-full オプションを使用して明示的に全取得を実行してください。")
+            return 1
+        else:
+            print(f"前回の実行情報が見つかりませんでした: {last_run_file.absolute()}")
+            print("初回実行として全取得モードで実行します")
     
     updated_prs = collector.update_pr_data(
         limit=args.limit if args.limit > 0 else None,

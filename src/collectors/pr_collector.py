@@ -66,16 +66,18 @@ class PRCollector:
                     for pr in prs:
                         pr_updated_at = datetime.datetime.fromisoformat(pr["updated_at"].replace("Z", "+00:00"))
                         if pr_updated_at <= last_updated_at:
-                            print(f"前回処理済みのPR #{pr['number']} に到達しました。処理を終了します。")
+                            print(f"前回処理済みのPR #{pr['number']} (更新日時: {pr_updated_at}) に到達しました。処理を終了します。")
                             break
                         new_prs.append(pr)
-
+                    
                     if len(new_prs) < len(prs):
                         all_prs.extend(new_prs)
+                        print(f"差分更新: {len(new_prs)}件の新しいPRを見つけました")
                         break
-
+                    
                     all_prs.extend(new_prs)
                 else:
+                    print(f"全取得モード: ページ {page} で {len(prs)}件のPRを取得しました")
                     all_prs.extend(prs)
 
                 page += 1
