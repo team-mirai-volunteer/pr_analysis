@@ -1,4 +1,26 @@
-# PR分析システム
+# 【アーカイブ済み】PR分析システム
+
+⚠️ **重要なお知らせ**: このリポジトリの機能は [policy-pr-hub](https://github.com/team-mirai-volunteer/policy-pr-hub) に移行されました。
+
+## 移行について
+
+このリポジトリ（pr_analysis）の役割は [team-mirai-volunteer/policy-pr-hub](https://github.com/team-mirai-volunteer/policy-pr-hub) に移行され、後者がまともに動き始めています。
+
+**新しいシステムの特徴:**
+- より包括的なPR分析機能
+- GitHub Actionsによる自動化された定期実行
+- 1700+件の政策改善提案PRに対応
+- セクション分析、ラベル分析、政策分野別分析などの高度な分析機能
+- データ収集の自動化とRate Limit対応
+
+**今後の利用について:**
+- 新しい開発や分析作業は [policy-pr-hub](https://github.com/team-mirai-volunteer/policy-pr-hub) をご利用ください
+- このリポジトリは参考資料として保持されますが、アクティブな開発は行われません
+- このリポジトリはpublic archiveとして保存される予定です
+
+---
+
+# PR分析システム（旧版）
 
 GitHubのPull Requestデータを収集・分析し、レポートを生成するシステムです。
 
